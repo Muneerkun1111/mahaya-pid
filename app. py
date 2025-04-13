@@ -1,0 +1,56 @@
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import random
+
+# PID Constants
+Kp = 2.0
+Ki = 0.1
+Kd = 0.01
+setpoint = 75.0
+
+# PID variables
+integral = 0.0
+previous_error = 0.0
+process_value = 70.0
+
+# Graph Data
+x_vals = []
+y_vals = []
+control_vals = []
+
+def pid_control(current_value):
+    global integral, previous_error
+    error = setpoint - current_value
+    integral += error
+    derivative = error - previous_error
+    output = Kp * error + Ki * integral + Kd * derivative
+    previous_error = error
+    return output
+
+# Animation function
+def animate(i):
+    global process_value
+    control = pid_control(process_value)
+    
+    # Simulate system response
+    noise = random.uniform(-0.5, 0.5)
+    process_value += (control * 0.1 + noise)
+    
+    x_vals.append(i)
+    y_vals.append(process_value)
+    control_vals.append(control)
+    
+    plt.cla()
+    plt.title("Real-Time PID Control")
+    plt.xlabel("Time Step")
+    plt.ylabel("Temperature (°C)")
+    plt.plot(x_vals, y_vals, label='Process Value')
+    plt.plot(x_vals, [setpoint]*len(x_vals), '--', label='Setpoint')
+    plt.plot(x_vals, control_vals, label='Control Signal')
+    plt.legend(loc='upper right')
+    plt.tight_layout()
+
+# Plot setup
+fig = plt.figure()
+ani = animation.FuncAnimation(fig, animate, interval=500)
+plt.show()
